@@ -133,7 +133,7 @@ local Update = function(self, bag, slot)
 
 		ResetCell(container)
 
-		if (itemQuality >= 2) then
+		if (itemQuality ~= nil and itemQuality >= 2) then
 			-- quality
 			local col = colors[itemQuality]
 			r, g, b = col[1], col[2], col[3]
