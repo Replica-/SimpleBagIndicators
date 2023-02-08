@@ -123,9 +123,10 @@ local Update = function(self, bag, slot)
 			
 			local td = texData[1]
 			container.tex:ClearAllPoints()
-			container.tex:SetPoint(td.point, container, "CENTER")
-			container.tex:SetSize(8, 8)
+			container.tex:SetPoint(td.point, container, "BOTTOM")
+			container.tex:SetSize(16, 10)
 			container.tex:SetColorTexture(td.r,td.g,td.b);
+			container.tex:SetGradient("HORIZONTAL", CreateColor(1, 1, 1, 1), CreateColor(1, 1, 1, 0.2))
 
 			Cache[self] = container
 			
@@ -137,7 +138,7 @@ local Update = function(self, bag, slot)
 			-- quality
 			local col = colors[itemQuality]
 			r, g, b = col[1], col[2], col[3]
-			container:SetBackdropBorderColor(r,g,b, 0.7)
+			container:SetBackdropBorderColor(r,g,b, 0.6)
 		end
 
 		if (itemType == 'Armor' or itemType == 'Weapon') then
