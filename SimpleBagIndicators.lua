@@ -60,8 +60,8 @@ local texData = {
     },
 }
 
-local function MakeTexture(frame)
-    local tex = frame:CreateTexture(frame:GetName() .. '_text',level)
+local function MakeTexture(frame, order)
+    local tex = frame:CreateTexture(frame:GetName() .. '_text',level, nil, order)
     return tex
 end
 
@@ -70,6 +70,7 @@ local ResetCell = function(cell)
 	cell.bindType:SetText("")
 	cell:SetBackdropBorderColor(0,0,0, 0)
 	cell.tex:Hide()
+	cell.texbg:Hide()
 end
 
 -- Main Update
@@ -119,14 +120,21 @@ local Update = function(self, bag, slot)
 			container.bind:SetPoint("TOPLEFT", 0,0)
 			container.bind:SetShadowOffset(1, -1)
 			container.bind:SetShadowColor(0, 0, 0, .5)
-			container.tex = MakeTexture(container)
 			
 			local td = texData[1]
-			container.tex:ClearAllPoints()
-			container.tex:SetPoint(td.point, container, "BOTTOM")
-			container.tex:SetSize(16, 10)
-			container.tex:SetColorTexture(td.r,td.g,td.b);
-			container.tex:SetGradient("HORIZONTAL", CreateColor(1, 1, 1, 1), CreateColor(1, 1, 1, 0.2))
+	
+			container.tex = MakeTexture(container, -6)
+			container.tex:SetPoint(td.point, container, "BOTTOM", -1,1)
+			container.tex:SetSize(17, 17)
+			container.tex:Show()
+			
+			container.texbg = MakeTexture(container, -7)
+			container.texbg:SetPoint(td.point, container, "BOTTOM", 1,-1)
+			container.texbg:SetSize(21, 21)
+			container.texbg:SetColorTexture(1,1,1);
+			container.texbg:SetGradient("VERTICAL", CreateColor(1, 1, 1, 0.7), CreateColor(1, 1, 1, 1))
+			container.texbg:Show()
+
 
 			Cache[self] = container
 			
@@ -139,6 +147,7 @@ local Update = function(self, bag, slot)
 			local col = colors[itemQuality]
 			r, g, b = col[1], col[2], col[3]
 			container:SetBackdropBorderColor(r,g,b, 0.6)
+			--container.texbg:SetColorTexture(r+(125/255),g+(125/255),b+(125/255), 1)
 		end
 
 		if (itemType == 'Armor' or itemType == 'Weapon') then
@@ -164,6 +173,10 @@ local Update = function(self, bag, slot)
 						local _, _, _, _, bagSlot, bagBag = EquipmentManager_UnpackLocation(l)
 						if (bagBag ~= false) then
 							if (bagSlot == slot) and (bagBag == bag) then
+
+								local _, iconFileID = C_EquipmentSet.GetEquipmentSetInfo(id)
+								container.tex:SetTexture(iconFileID)
+
 								found = found + 1
 							end
 						end
@@ -173,6 +186,7 @@ local Update = function(self, bag, slot)
 
 					
 			if found > 0 then
+				container.texbg:Show()	
 				container.tex:Show()
 			end
 		end
