@@ -124,15 +124,15 @@ local Update = function(self, bag, slot)
 			local td = texData[1]
 	
 			container.tex = MakeTexture(container, -6)
-			container.tex:SetPoint(td.point, container, "BOTTOM", -1,1)
-			container.tex:SetSize(17, 17)
+			container.tex:SetPoint(td.point, container, "BOTTOM", 0,0)
+			container.tex:SetSize(19, 19)
 			container.tex:Show()
 			
 			container.texbg = MakeTexture(container, -7)
 			container.texbg:SetPoint(td.point, container, "BOTTOM", 1,-1)
 			container.texbg:SetSize(21, 21)
 			container.texbg:SetColorTexture(1,1,1);
-			container.texbg:SetGradient("VERTICAL", CreateColor(1, 1, 1, 0.7), CreateColor(1, 1, 1, 1))
+			container.texbg:SetGradient("VERTICAL", CreateColor(1, 1, 1, 0.7), CreateColor(1, 1, 1, 0.7))
 			container.texbg:Show()
 
 
