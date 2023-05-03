@@ -1,4 +1,4 @@
-## Interface: 100007
+## Interface: 100010
 
 ## Title: SimpleBagIndicators
 ## Notes: Forked off Lars Norberg BlizzardBags: combined several modifications to form a one stop shop for a Simple bag mod that shows ilvl, item type, thicker rarity border and equipment set membership indicator
