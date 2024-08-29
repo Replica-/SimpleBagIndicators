@@ -203,9 +203,7 @@ end
 local UpdateContainer = function(self)
 	local bag = self:GetID()
 	local name = self:GetName()
-	local id = 1
-	local button = _G[name.."Item"..id]
-	while (button) do
+	for id,button in self:EnumerateItems() do
 		if (button.hasItem) then
 			Update(button, bag, button:GetID())
 		else
@@ -214,8 +212,6 @@ local UpdateContainer = function(self)
 				ResetCell(cache)
 			end
 		end
-		id = id + 1
-		button = _G[name.."Item"..id]
 	end
 end
 
