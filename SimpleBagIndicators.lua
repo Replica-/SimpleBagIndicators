@@ -89,6 +89,12 @@ local Update = function(self, bag, slot)
 
 		local _, _, itemQuality, itemLevel, _, itemType, _, _, _, _, _, _, _, bindType = GetItemInfo(itemLink)
 		
+		-- Get Scaled ilevel
+		local itemObj = Item:CreateFromBagAndSlot(bag, slot)
+		if ( itemObj ) then
+			itemLevel = itemObj:GetCurrentItemLevel()
+		end
+
 		-- Retrieve or create the button's info container.
 		local container = Cache[self]
 		if (not container) then
