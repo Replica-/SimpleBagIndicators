@@ -89,7 +89,6 @@ local Update = function(self, bag, slot)
 
 		local _, _, itemQuality, itemLevel, _, itemType, _, _, _, _, _, _, _, bindType = GetItemInfo(itemLink)
 		
-		-- Get Scaled ilevel
 		local itemObj = Item:CreateFromBagAndSlot(bag, slot)
 		if ( itemObj ) then
 			itemLevel = itemObj:GetCurrentItemLevel()
@@ -111,7 +110,7 @@ local Update = function(self, bag, slot)
 			container = CreateFrame("Frame", 'Text', self, "BackdropTemplate")
 			container:SetFrameLevel(self:GetFrameLevel() + 5)
 			container:SetAllPoints()
-			container:SetBackdrop(backdrop)	
+			container:SetBackdrop(backdrop)
 
 			container.bindType = container:CreateFontString()
 			container.bindType:SetFontObject(NumberFont_Outline_Med or NumberFontNormal)
@@ -141,7 +140,6 @@ local Update = function(self, bag, slot)
 			container.texbg:SetGradient("VERTICAL", CreateColor(1, 1, 1, 0.7), CreateColor(1, 1, 1, 0.7))
 			container.texbg:Show()
 
-
 			Cache[self] = container
 			
 		end
@@ -153,7 +151,13 @@ local Update = function(self, bag, slot)
 			local col = colors[itemQuality]
 			r, g, b = col[1], col[2], col[3]
 			container:SetBackdropBorderColor(r,g,b, 0.6)
-			--container.texbg:SetColorTexture(r+(125/255),g+(125/255),b+(125/255), 1)
+			
+			if (Coloured_Set) then
+				container.texbg:SetColorTexture(r*1.5,g*1.5,b*1.5, 1)
+			else 
+				container.texbg:SetColorTexture(255,255,255, 1)
+			end
+			--container.texbg:SetColorTexture(r*3,g*3,b*3, 1)
 		end
 
 		if (itemType == 'Armor' or itemType == 'Weapon') then
@@ -166,7 +170,16 @@ local Update = function(self, bag, slot)
 
 			-- ilvl
 			if (itemLevel ~= nil)  and (itemLevel ~= 1) then			
-				container.bind:SetTextColor(255, 255, 255)
+				local col = colors[itemQuality]
+
+				if (Coloured_Ilvl) then
+					r, g, b = col[1], col[2], col[3]
+				else 
+					r, g, b = 255,255,255
+				end
+				
+				container.bind:SetTextColor(r*3, g*3, b*3)
+			
 				container.bind:SetText(itemLevel)
 			end
 
@@ -310,6 +323,62 @@ local OnAddonLoaded = function(self, event, arg1)
 		self:SetScript("OnEvent", OnEvent)
 	end
 
+	-- Only when FrameXML loads & Only when saved variable is imported in
+	if (event == "ADDON_LOADED" and arg1 == "SimpleBagIndicators" and frame ~= nil) then
+		local panel = frame
+		local helloFS = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		helloFS:SetPoint("TOPLEFT", panel, 0, -20);
+		helloFS:SetText("Coloured ILVL")
+
+		editFrame = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate");
+		editFrame:SetPoint("TOPLEFT", panel, 123, -10);
+		editFrame:SetMovable(false);
+
+		if Coloured_Ilvl ~= nil then
+			editFrame:SetChecked(Coloured_Ilvl)
+		end
+
+		editFrame:SetScript("OnClick", function(self)
+			Coloured_Ilvl = self:GetChecked()
+		end)
+
+		local helloFS = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		helloFS:SetPoint("TOPLEFT", panel, 0, -60);
+		helloFS:SetText("Coloured Set Border")
+
+		editFrame = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate");
+		editFrame:SetPoint("TOPLEFT", panel, 123, -50);
+		editFrame:SetMovable(false);
+
+		if Coloured_Set ~= nil then
+			editFrame:SetChecked(Coloured_Set)
+		end
+		
+		editFrame:SetScript("OnClick", function(self)
+			Coloured_Set = self:GetChecked()
+		end)
+
+	elseif event == "PLAYER_LOGOUT" then
+		-- Save the time at which the character logs out
+		
+	end
+
+end
+
+-- Initialise
+if (Coloured_Set == nil or Coloured_Set == '') then
+	Coloured_Set = false
+end
+
+if (Coloured_Ilvl == nil or Coloured_Ilvl == '') then
+	Coloured_Ilvl = false
+end
+
+function Panel_OnLoad(panel)
+    panel.name = 'SimpleBagIndicators'
+	frame = panel
+
+	Settings.RegisterAddOnCategory(Settings.RegisterCanvasLayoutCategory(panel, "SimpleBagIndicators"))
 end
 
 -- Only when the addon is loaded
