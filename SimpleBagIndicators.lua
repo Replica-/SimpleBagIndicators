@@ -93,6 +93,7 @@ local Update = function(self, bag, slot)
 		local wue = false
 
 		local itemObj = Item:CreateFromBagAndSlot(bag, slot)
+		
 		if ( itemObj ) then
 			wue = C_Item.IsBoundToAccountUntilEquip(ItemLocation:CreateFromBagAndSlot(bag,slot))
 			itemLevel = itemObj:GetCurrentItemLevel()
@@ -167,6 +168,11 @@ local Update = function(self, bag, slot)
 		if (itemType == 'Armor' or itemType == 'Weapon') then
 			-- bind type
 			if (bindType ~= nil) then
+				
+				-- If we're bound then just make it blank
+				if (C_Item.IsBound(ItemLocation:CreateFromBagAndSlot(bag, slot))) then
+						bindType = 1
+				end
 				local bindStr = questData[bindType].str
 				if (wue) then 
 					bindStr = questData[66].str
