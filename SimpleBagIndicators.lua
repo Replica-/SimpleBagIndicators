@@ -15,6 +15,7 @@ local questData = {
 	[3] = {str='BoU'},
 	[4] = {str='Q'},
 	[5] = {str=''},
+	[66] = {str='WuE'}
 }
 
 local texData = {
@@ -89,8 +90,11 @@ local Update = function(self, bag, slot)
 
 		local _, _, itemQuality, itemLevel, _, itemType, _, _, _, _, _, _, _, bindType = GetItemInfo(itemLink)
 		
+		local wue = false
+
 		local itemObj = Item:CreateFromBagAndSlot(bag, slot)
 		if ( itemObj ) then
+			wue = C_Item.IsBoundToAccountUntilEquip(ItemLocation:CreateFromBagAndSlot(bag,slot))
 			itemLevel = itemObj:GetCurrentItemLevel()
 		end
 
@@ -163,8 +167,19 @@ local Update = function(self, bag, slot)
 		if (itemType == 'Armor' or itemType == 'Weapon') then
 			-- bind type
 			if (bindType ~= nil) then
-				local bindStr = questData[bindType].str	
-				container.bindType:SetTextColor(255, 255, 255)
+				local bindStr = questData[bindType].str
+				if (wue) then 
+					bindStr = questData[66].str
+				end
+
+				if (Coloured_Bind) then
+					local col = colors[itemQuality]
+					r, g, b = col[1], col[2], col[3]
+					container.bindType:SetTextColor(r*3, g*3, b*3)
+				else
+					container.bindType:SetTextColor(255, 255, 255)
+				end
+				
 				container.bindType:SetText(bindStr)
 			end
 
@@ -326,6 +341,8 @@ local OnAddonLoaded = function(self, event, arg1)
 	-- Only when FrameXML loads & Only when saved variable is imported in
 	if (event == "ADDON_LOADED" and arg1 == "SimpleBagIndicators" and frame ~= nil) then
 		local panel = frame
+
+		-- ILVL
 		local helloFS = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		helloFS:SetPoint("TOPLEFT", panel, 0, -20);
 		helloFS:SetText("Coloured ILVL")
@@ -342,6 +359,7 @@ local OnAddonLoaded = function(self, event, arg1)
 			Coloured_Ilvl = self:GetChecked()
 		end)
 
+		-- SET
 		local helloFS = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		helloFS:SetPoint("TOPLEFT", panel, 0, -60);
 		helloFS:SetText("Coloured Set Border")
@@ -358,6 +376,23 @@ local OnAddonLoaded = function(self, event, arg1)
 			Coloured_Set = self:GetChecked()
 		end)
 
+		-- BIND
+		local helloFS = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		helloFS:SetPoint("TOPLEFT", panel, 0, -110);
+		helloFS:SetText("Coloured Bind Type")
+
+		editFrame = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate");
+		editFrame:SetPoint("TOPLEFT", panel, 123, -100);
+		editFrame:SetMovable(false);
+
+		if Coloured_Bind ~= nil then
+			editFrame:SetChecked(Coloured_Bind)
+		end
+		
+		editFrame:SetScript("OnClick", function(self)
+			Coloured_Bind = self:GetChecked()
+		end)
+
 	elseif event == "PLAYER_LOGOUT" then
 		-- Save the time at which the character logs out
 		
@@ -372,6 +407,10 @@ end
 
 if (Coloured_Ilvl == nil or Coloured_Ilvl == '') then
 	Coloured_Ilvl = false
+end
+
+if (Coloured_Bind == nil or Coloured_Bind == '') then
+	Coloured_Bind = false
 end
 
 function Panel_OnLoad(panel)
