@@ -273,9 +273,28 @@ end
 -- Parse the main bankframe
 local UpdateBank = function()
 	local BankSlotsFrame = BankSlotsFrame
-	local bag = BankSlotsFrame:GetID()
+	local bag = BANK_CONTAINER
 	for id = 1, NUM_BANKGENERIC_SLOTS do
 		local button = BankSlotsFrame["Item"..id]
+		if (button and not button.isBag) then
+			if (button.hasItem) then
+				Update(button, bag, button:GetID())
+			else
+				local cache = Cache[button]
+				if (cache) then
+					ResetCell(cache)
+				end
+			end
+		end
+	end
+end
+
+-- Parse the main bankframe
+local UpdatePlayer = function()
+	local BankSlotsFrame = BankSlotsFrame
+	local bag =  "player"
+	for id = 1, 10 do
+		local button = Pla["Item"..id]
 		if (button and not button.isBag) then
 			if (button.hasItem) then
 				Update(button, bag, button:GetID())
@@ -294,7 +313,7 @@ local UpdateBankButton = function(self)
 	if (self and not self.isBag) then
 		-- Always run a full update here,
 		-- as the .hasItem flag might not have been set yet.
-		Update(self, BankSlotsFrame:GetID(), self:GetID())
+		Update(self, BANK_CONTAINER, self:GetID())
 	else
 		local cache = Cache[button]
 		if (cache) then
@@ -305,20 +324,45 @@ end
 
 -- Player bank slots changed event
 local OnEvent = function(self, event, ...)
-	
-	if (event == "PLAYERBANKSLOTS_CHANGED") then
+	if (event == "PLAYERBANKSLOTS_CHANGED") then	
 		local slot = ...
 		if (slot <= NUM_BANKGENERIC_SLOTS) then
 			local button = BankSlotsFrame["Item"..slot]
 			if (button and not button.isBag) then
 				-- Always run a full update here,
 				-- as the .hasItem flag might not have been set yet.
-				Update(button, BankSlotsFrame:GetID(), button:GetID())
+				Update(button, BANK_CONTAINER, button:GetID())
 			end
 		end
 	end
 end
 
+local function MyEquipmentFlyout_OnUpdate(itemButton)
+    print("EquipmentFlyout_OnUpdate has been called!")
+	local id = itemButton.id or itemButton:GetID();
+	local flyout = EquipmentFlyoutFrame;
+	if flyout:IsShown() and (flyout.button ~= itemButton) then
+		flyout:Hide();
+	end
+	local buttons = flyout.buttons;
+	
+	if ( flyout.button ~= itemButton ) then
+		flyout.currentPage = nil;
+	end
+	for i = 1, #buttons do
+		local itemLocation = buttons[i]:GetItemLocation();
+		print(itemLocation:IsBagAndSlot())
+		if itemLocation:IsBagAndSlot() then
+			local bag, slot = itemLocation:GetBagAndSlot();
+			Update(buttons[i], bag, buttons[i]:GetID())
+		elseif itemLocation:IsEquipmentSlot() then
+			local slot = itemLocation:GetEquipmentSlot();
+			Update(buttons[i], 'player', buttons[i]:GetID())
+		end
+		
+	end
+    -- Add any additional functionality you want here
+end
 
 local OnAddonLoaded = function(self, event, arg1)
 
@@ -336,9 +380,17 @@ local OnAddonLoaded = function(self, event, arg1)
 
 		-- Update hook
 		hooksecurefunc(ContainerFrameCombinedBags, "Update", UpdateCombinedContainer)
-		hooksecurefunc("BankFrame_UpdateItems", UpdateBank)
+		hooksecurefunc("BankFrameItemButton_Update", UpdateBank)
+		--hooksecurefunc("EquipmentFlyout", "EquipmentFlyout_OnLoad",  EquipmentFlyout_OnLoadTest)
+
+		--hooksecurefunc("PaperDollItemSlotButton_Update", function(button)
+		--	Update(button, "player")
+		--end)
 
 		-- For single item changes for bank
+
+		hooksecurefunc("EquipmentFlyout_Show", MyEquipmentFlyout_OnUpdate)
+		
 		self:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
 
 		self:SetScript("OnEvent", OnEvent)
