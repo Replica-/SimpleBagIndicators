@@ -340,7 +340,6 @@ local OnEvent = function(self, event, ...)
 end
 
 local function MyEquipmentFlyout_OnUpdate(itemButton)
-    print("EquipmentFlyout_OnUpdate has been called!")
 	local id = itemButton.id or itemButton:GetID();
 	local flyout = EquipmentFlyoutFrame;
 	if flyout:IsShown() and (flyout.button ~= itemButton) then
@@ -391,7 +390,7 @@ local OnAddonLoaded = function(self, event, arg1)
 
 		-- For single item changes for bank
 
-		hooksecurefunc("EquipmentFlyout_Show", MyEquipmentFlyout_OnUpdate)
+		--hooksecurefunc("EquipmentFlyout_Show", MyEquipmentFlyout_OnUpdate)
 		
 		self:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
 
