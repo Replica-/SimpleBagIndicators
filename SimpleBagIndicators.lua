@@ -1,3 +1,5 @@
+-- https://www.townlong-yak.com/framexml/live/Blizzard_FrameXML/EquipmentFlyout.lua#150
+
 -- Cell Cache
 local Cache = {}
 
