@@ -212,7 +212,11 @@ local Update = function(self, bag, slot)
 					local locations = C_EquipmentSet.GetItemLocations(id) or {}
 					for _, l in pairs(locations) do
 					
-						local _, _, _, _, bagSlot, bagBag = EquipmentManager_UnpackLocation(l)
+						if type(l) == "number" and C_EquipmentSet.UnpackLocation then
+							local player, bank, bags, bagSlot, bagBag = C_EquipmentSet.UnpackLocation(l)
+						end
+
+
 						if (bagBag ~= false) then
 							if (bagSlot == slot) and (bagBag == bag) then
 
@@ -381,20 +385,10 @@ local OnAddonLoaded = function(self, event, arg1)
 
 		-- Update hook
 		hooksecurefunc(ContainerFrameCombinedBags, "Update", UpdateCombinedContainer)
-		hooksecurefunc("BankFrameItemButton_Update", UpdateBank)
-		--hooksecurefunc("EquipmentFlyout", "EquipmentFlyout_OnLoad",  EquipmentFlyout_OnLoadTest)
-
-		--hooksecurefunc("PaperDollItemSlotButton_Update", function(button)
-		--	Update(button, "player")
-		--end)
-
-		-- For single item changes for bank
-
-		--hooksecurefunc("EquipmentFlyout_Show", MyEquipmentFlyout_OnUpdate)
 		
-		self:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
-
-		self:SetScript("OnEvent", OnEvent)
+		--hooksecurefunc("BankFrameItemButton_Update", UpdateBank)
+		--self:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
+		--self:SetScript("OnEvent", OnEvent)
 	end
 
 	-- Only when FrameXML loads & Only when saved variable is imported in
