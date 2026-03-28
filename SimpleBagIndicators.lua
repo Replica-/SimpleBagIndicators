@@ -75,6 +75,75 @@ local ResetCell = function(cell)
 	cell.tex:Hide()
 	cell.texbg:Hide()
 end
+-- Reimplementation of EquipmentManager_UnpackLocation for set locations
+local function UnpackLocation(location)
+    if not location or location < 0 then
+        return false, false, false, nil, nil
+    end
+
+    local player = bit.band(location, ITEM_INVENTORY_LOCATION_PLAYER) ~= 0
+    local bank   = bit.band(location, ITEM_INVENTORY_LOCATION_BANK) ~= 0
+    local bags   = bit.band(location, ITEM_INVENTORY_LOCATION_BAGS) ~= 0
+
+    -- Strip flags
+    location = location - bit.band(location,
+        ITEM_INVENTORY_LOCATION_PLAYER +
+        ITEM_INVENTORY_LOCATION_BANK +
+        ITEM_INVENTORY_LOCATION_BAGS
+    )
+
+    if bags then
+        local bag = bit.rshift(location, ITEM_INVENTORY_BAG_BIT_OFFSET)
+        local slot = location - bit.lshift(bag, ITEM_INVENTORY_BAG_BIT_OFFSET)
+        return player, bank, bags, slot, bag
+    else
+        -- location is just the equipment/bank slot
+        local slot = location
+        return player, bank, bags, slot, nil
+    end
+end
+
+local function IterateAllEquipmentSetItems()
+    local results = {}
+
+    for _, setID in ipairs(C_EquipmentSet.GetEquipmentSetIDs()) do
+        local locations = C_EquipmentSet.GetItemLocations(setID)
+        if locations then
+            for equipSlot, loc in pairs(locations) do
+                if type(loc) == "number" and loc > 1 then
+                    local isPlayer, isBank, isBags, slot, bag = UnpackLocation(loc)
+
+                    local entry = {
+                        setID     = setID,
+                        equipSlot = equipSlot,
+                        equipped  = false,
+                        bank      = false,
+                        bags      = false,
+                        bag       = nil,
+                        slot      = nil,
+                    }
+
+                    if isPlayer and not isBags and not isBank then
+                        entry.equipped = true
+                        entry.slot = slot
+                    elseif isBank and not isBags then
+                        entry.bank = true
+                        entry.slot = slot
+                    elseif isBags then
+                        entry.bags = true
+                        entry.bag  = bag
+                        entry.slot = slot
+                    end
+
+                    table.insert(results, entry)
+                end
+            end
+        end
+    end
+
+    return results
+end
+
 
 -- Main Update
 local Update = function(self, bag, slot)
@@ -88,10 +157,12 @@ local Update = function(self, bag, slot)
 		itemLink = containerInfo.hyperlink
 	end
 	
+	local setItems = IterateAllEquipmentSetItems()
+
 	if (itemLink) then
 
-		local _, _, itemQuality, itemLevel, _, itemType, _, _, _, _, _, _, _, bindType = GetItemInfo(itemLink)
-		
+		local _, _, itemQuality, itemLevel, _, itemType, _, _, _, _, _, _, _, bindType, expansionID, setID, isCraftingReagent = GetItemInfo(itemLink)
+
 		local wue = false
 
 		local itemObj = Item:CreateFromBagAndSlot(bag, slot)
@@ -135,10 +206,11 @@ local Update = function(self, bag, slot)
 			
 			local td = texData[1]
 	
+			-- This is for the small one
 			container.tex = MakeTexture(container, -6)
 			container.tex:SetPoint(td.point, container, "BOTTOM", 0,0)
 			container.tex:SetSize(19, 19)
-			container.tex:Show()
+			-- ontainer.tex:Show()
 			
 			container.texbg = MakeTexture(container, -7)
 			container.texbg:SetPoint(td.point, container, "BOTTOM", 1,-1)
@@ -164,7 +236,7 @@ local Update = function(self, bag, slot)
 			else 
 				container.texbg:SetColorTexture(255,255,255, 1)
 			end
-			--container.texbg:SetColorTexture(r*3,g*3,b*3, 1)
+
 		end
 
 		if (itemType == 'Armor' or itemType == 'Weapon') then
@@ -202,36 +274,25 @@ local Update = function(self, bag, slot)
 				end
 				
 				container.bind:SetTextColor(r*3, g*3, b*3)
-			
 				container.bind:SetText(itemLevel)
 			end
 
-			-- Check the equipment sets
-			for i, id in ipairs(C_EquipmentSet.GetEquipmentSetIDs()) do
-				if i < 4 then
-					local locations = C_EquipmentSet.GetItemLocations(id) or {}
-					for _, l in pairs(locations) do
-					
-						if type(l) == "number" and C_EquipmentSet.UnpackLocation then
-							local player, bank, bags, bagSlot, bagBag = C_EquipmentSet.UnpackLocation(l)
-						end
+			found = 0
+			for _, info in ipairs(setItems) do
+				-- Only care about THIS bag/slot
+				if info.bags and info.bag == bag and info.slot == slot then
 
-
-						if (bagBag ~= false) then
-							if (bagSlot == slot) and (bagBag == bag) then
-
-								local _, iconFileID = C_EquipmentSet.GetEquipmentSetInfo(id)
-								container.tex:SetTexture(iconFileID)
-
-								found = found + 1
-							end
-						end
-					end
+					-- Set your icon here
+					local setName, icon = C_EquipmentSet.GetEquipmentSetInfo(info.setID)
+					container.tex:SetTexture(icon)
+					found = 1
+					break
 				end
 			end
 
 					
 			if found > 0 then
+				print(found) 
 				container.texbg:Show()	
 				container.tex:Show()
 			end
