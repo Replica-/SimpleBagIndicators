@@ -290,7 +290,6 @@ local Update = function(self, bag, slot)
 
 					
 			if found > 0 then
-				print(found) 
 				container.texbg:Show()	
 				container.tex:Show()
 			end
